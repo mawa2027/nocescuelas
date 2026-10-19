@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ticket {{ incidencia.ticket }}</title>
+    <style>
+        body {
+            background:#111;
+            color:#eee;
+            font-family: Arial;
+        }
+        .card {
+            background:#222;
+            padding:25px;
+            width:700px;
+            border-radius:10px;
+            margin:40px auto;
+        }
+        .titulo {
+            color:#00ff99;
+            font-size:22px;
+            margin-bottom:10px;
+        }
+        .bloque {
+            margin-top:20px;
+            padding-top:10px;
+            border-top:1px solid #444;
+        }
+        .estado {
+            font-weight:bold;
+        }
+        .estado.abierto { color:#ffaa00; }
+        .estado.derivada { color:#00aaff; }
+
+        .acciones {
+            margin-top:30px;
+            text-align:right;
+        }
+        .btn {
+            background:#00ff99;
+            color:#000;
+            padding:10px 18px;
+            border-radius:6px;
+            text-decoration:none;
+            font-weight:bold;
+        }
+        .btn:hover {
+            background:#00cc77;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="card">
+
+    <div class="titulo">🎫 Ticket {{ incidencia.ticket }}</div>
+
+    <div class="bloque">
+        <b>Escuela:</b> {{ incidencia.escuela.escuelas }}<br>
+        <b>CUE:</b> {{ incidencia.escuela.cue }}<br>
+        <b>Predio:</b> {{ incidencia.escuela.predio }}
+    </div>
+
+    <div class="bloque">
+        <b>Contacto:</b> {{ incidencia.contacto }}<br>
+        <b>Teléfono:</b> {{ incidencia.telefono }}
+    </div>
+
+    <div class="bloque">
+        <b>Fecha reclamo:</b> {{ incidencia.fecha }}<br>
+        <b>Fecha límite:</b> {{ incidencia.fecha_limite }}<br>
+        <b>Estado:</b>
+        {% if incidencia.estado == "DERIVADA" %}
+            <span class="estado derivada">DERIVADA</span>
+        {% else %}
+            <span class="estado abierto">{{ incidencia.estado }}</span>
+        {% endif %}
+    </div>
+
+    <div class="bloque">
+        <b>Diagnóstico:</b><br>
+        {{ incidencia.diagnostico }}
+    </div>
+
+    {% if incidencia.estado != "DERIVADA" %}
+    <div class="acciones">
+        <a href="{% url 'derivar_ticket' incidencia.ticket %}" class="btn">
+            🚚 Derivar ticket
+        </a>
+    </div>
+    {% endif %}
+
+</div>
+
+</body>
+</html>
+

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Tickets - NOC</title>
+    
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        body {
+            background: #0a0f1e;
+            font-family: 'Segoe UI', 'Roboto', 'Courrier New', monospace;
+            color: #e2e8f0;
+	    min-height:100vh
+        }
+        
+            .noc-header { 
+	        background: #0f1527;
+        	border-bottom: 3px solid #2563eb;
+		padding: 15px 30px; 
+		box-shadow: 0 4px 20px
+		rgba(0,0,0,0.5);
+		display: flex;
+		justify-content: space-between; 
+		align-items: center;
+	    }
+
+        .noc-header h1{
+            font-size: 22px;
+            font-weight: 700;
+            margin:0;
+            letter-spacing:1px;
+        }
+        .noc-nav {
+            background: #0f1527;
+            border-bottom: 1px solid #2d3a5e;
+            padding: 0 30px;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 5px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-link {
+            display: block;
+            padding: 16px 24px;
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.2s;
+	    border-bottom: 3px solid transparent;
+        }
+
+        .nav-link.active {
+            color: #38bdf8;
+            background: #1a2639;
+        }
+
+        .main-content {
+            padding: 25px 30px;
+        }
+
+        .filters-card, .tickets-table-container {
+            background: #1a2639;
+            border: 1px solid #2d3a5e;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #0f1527;
+            padding: 12px;
+            font-size: 13px;
+            color: #94a3b8;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #2d3a5e;
+        }
+
+        .ticket-number {
+            font-family: monospace;
+            font-weight: bold;
+            color: #38bdf8;
+        }
+
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-abierto {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .status-derivado {
+            background: rgba(234, 179, 8, 0.1);
+            color: #eab308;
+            border: 1px solid rgba(234, 179, 8, 0.3);
+        }
+
+        .status-proceso {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .status-rechazado {
+            background: rgba(244, 63, 94, 0.1);
+            color: #f43f5e;
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+
+        .status-cerrado {
+            background: rgba(148, 163, 184, 0.15);
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.4);    
+	}
+
+        .view-link {
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 6px 12px;
+            border: 1px solid #2d3a5e;
+            border-radius: 6px;
+        }
+
+        .view-link:hover {
+            background: #2d3a5e;
+            color: white;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="noc-header">
+    <h1>SISTEMA NOC</h1>
+    <span class="text-success">● OPERATIVO</span>
+</div>
+
+<!-- Navegación -->
+<nav class="noc-nav">
+    <ul class="nav-menu">
+        <li><a href="{% url 'lista_escuelas' %}" class="nav-link">🏫 Escuelas</a></li>
+        <li><a href="{% url 'lista_tickets' %}" class="nav-link active">🎫 Tickets</a></li>
+        <li><a href="{% url 'consultar_ticket' %}" class="nav-link">🔍 Consultar Ticket</a></li>
+        <li><a href="{% url 'dashboard_noc' %}" class="nav-link">📊 Dashboard</a></li>
+    </ul>
+</nav>
+
+<!-- Contenido -->
+<div class="main-content">
+
+    <!-- Filtros -->
+    <div class="filters-card">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Buscar</label>
+                <input type="text" name="q" class="form-control"
+                       placeholder="Ticket o escuela..."
+                       value="{{ q }}">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Mes</label>
+                <input type="month" name="mes" class="form-control"
+                       value="{{ mes }}">
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    Filtrar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabla -->
+    <div class="tickets-table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Ticket</th>
+                    <th>Escuela</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for i in incidencias %}
+                <tr>
+                    <td class="ticket-number">{{ i.ticket }}</td>
+                    <td>{{ i.escuela.escuelas }}</td>
+                    <td>{{ i.fecha|date:"d/m/Y" }}</td>
+                    <td>
+                        {% if i.estado == "ABIERTO" %}
+                            <span class="status-badge status-abierto">Abierto</span>
+
+                        {% elif i.estado == "DERIVADA" %}
+                            <span class="status-badge status-derivado">Derivada</span>
+
+                        {% elif i.estado == "EN_PROCESO" %}
+                            <span class="status-badge status-proceso">En Proceso</span>
+
+                        {% elif i.estado == "RECHAZADO" %}
+                            <span class="status-badge status-rechazado">Rechazado</span>
+
+                        {% elif i.estado == "CERRADO" %}
+                            <span class="status-badge status-cerrado">Cerrado</span>
+
+                        {% else %}
+                            <span class="status-badge status-cerrado">
+                                {{ i.estado }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'ver_ticket' i.ticket %}" class="view-link">
+                            Ver
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="empty-message">
+                        No hay tickets disponibles
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+</body>
+</html>

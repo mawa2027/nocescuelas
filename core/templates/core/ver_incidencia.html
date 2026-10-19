@@ -1,0 +1,38 @@
+<h2>Ticket {{ incidencia.ticket }}</h2>
+
+<p><b>Escuela:</b> {{ incidencia.escuela }}</p>
+<p><b>Fecha reclamo:</b> {{ incidencia.fecha }}</p>
+<p><b>Fecha límite:</b> {{ incidencia.fecha_limite }}</p>
+<p><b>Estado:</b> {{ incidencia.estado }}</p>
+
+<hr>
+
+<h3>Contacto</h3>
+<p><b>Nombre:</b> {{ incidencia.contacto }}</p>
+<p><b>Teléfono:</b> {{ incidencia.telefono }}</p>
+
+<hr>
+
+<h3>Diagnóstico NOC</h3>
+<p>{{ incidencia.diagnostico }}</p>
+
+<hr>
+
+<h3>Estado técnico</h3>
+
+<ul>
+    <li>Navega: {{ incidencia.navega }}</li>
+    <li>Navega lento: {{ incidencia.navega_lento }}</li>
+    <li>Ve red estudiante: {{ incidencia.ve_red_estudiante }}</li>
+    <li>Ve red docente: {{ incidencia.ve_red_docente }}</li>
+    <li>UTM prendido: {{ incidencia.luces_utmc }}</li>
+    <li>Switch prendido: {{ incidencia.luces_switch }}</li>
+    <li>Modem prendido: {{ incidencia.luces_modem }}</li>
+    <li>Tiene energía: {{ incidencia.tiene_energia }}</li>
+</ul>
+
+<hr>
+
+<h3>Observaciones</h3>
+<p>{{ incidencia.observaciones|default:"Sin observaciones" }}</p>
+

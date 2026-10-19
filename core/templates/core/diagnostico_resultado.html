@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Incidencia {{ incidencia.ticket }}</title>
+
+    <style>
+        body {
+            background:#111;
+            color:#eee;
+            font-family: Arial;
+        }
+
+        .card {
+            background:#222;
+            padding:25px;
+            width:750px;
+            border-radius:12px;
+            margin:auto;
+        }
+
+        h2, h3 {
+            margin-top: 5px;
+        }
+
+        .ticket {
+            font-size:22px;
+            color:#00ff99;
+            font-weight:bold;
+        }
+
+        .dato {
+            margin:4px 0;
+        }
+
+        .bad { color:#ff5555; }
+        .warn { color:orange; }
+        .ok { color:#00ff99; }
+
+        hr {
+            border:1px solid #333;
+            margin:15px 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<a href="/escuelas/{{ escuela.id }}/">← Volver a la escuela</a>
+
+<br><br>
+
+<div class="card">
+
+    <h2>{{ escuela.escuelas }}</h2>
+
+    <div class="ticket">
+        Ticket: {{ incidencia.ticket }}
+    </div>
+
+    <p class="dato">
+        📅 Fecha: {{ incidencia.fecha|date:"d/m/Y H:i" }}
+    </p
+
+
