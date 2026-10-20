@@ -1,0 +1,11 @@
+# Librerías de tu proyecto
+asgiref==3.11.0
+Django==5.2.10
+sqlparse==0.5.5
+tzdata==2025.3
+
+# Librerías agregadas para publicar en el servidor
+gunicorn
+whitenoise
+dj-database-url
+psycopg2-binary

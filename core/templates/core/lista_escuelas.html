@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOC - Escuelas</title>
+    
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0f1e;
+            font-family: 'Segoe UI', 'Roboto', 'Courier New', monospace;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .noc-header {
+            background: #0f1527;
+            border-bottom: 3px solid #2563eb;
+            padding: 15px 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        
+        .noc-header h1 {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+        
+        .noc-header .badge {
+            background: #2563eb;
+            color: white;
+            font-size: 12px;
+            padding: 5px 10px;
+        }
+        
+        /* Navegación */
+        .noc-nav {
+            background: #0f1527;
+            border-bottom: 1px solid #2d3a5e;
+            padding: 0 30px;
+        }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 5px;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 16px 24px;
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .nav-link:hover {
+            color: #38bdf8;
+            background: #1a2639;
+        }
+        
+        .nav-link.active {
+            color: white;
+            border-bottom-color: #2563eb;
+            background: #1a2639;
+        }
+        
+        /* Search container */
+        .search-container {
+            background: #0f1527;
+            border: 1px solid #2d3a5e;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 25px 30px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+        }
+        
+        .search-input {
+            background: #0a0f1e;
+            border: 1px solid #2d3a5e;
+            border-radius: 8px;
+            padding: 12px 15px;
+            color: #ffffff;
+            font-size: 15px;
+            width: 100%;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            background: #0f1527;
+        }
+        
+        .search-input::placeholder {
+            color: #94a3b8;
+        }
+        
+        .btn-exec {
+            background: #2563eb;
+            border: 1px solid #3b82f6;
+            color: white;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            padding: 12px 25px;
+            border-radius: 8px;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        
+        .btn-exec:hover {
+            background: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(37, 99, 235, 0.3);
+        }
+        
+        /* Dashboard cards */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 25px 30px;
+        }
+        
+        .noc-card {
+            background: #1a2639;
+            border: 1px solid #2d3a5e;
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s;
+        }
+        
+        .noc-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+            border-color: #3b82f6;
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .led {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .led-green { 
+            background: #22c55e; 
+            box-shadow: 0 0 12px #22c55e;
+        }
+        .led-yellow { 
+            background: #eab308; 
+            box-shadow: 0 0 12px #eab308;
+        }
+        .led-red { 
+            background: #ef4444; 
+            box-shadow: 0 0 12px #ef4444;
+        }
+        
+        .card-title {
+            color: #94a3b8;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        .card-number {
+            font-size: 42px;
+            font-weight: 800;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 10px;
+        }
+        
+        .card-status {
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-top: 10px;
+            border-top: 1px solid #2d3a5e;
+        }
+        
+        /* Tabla */
+        .table-container {
+            background: #1a2639;
+            border: 1px solid #2d3a5e;
+            border-radius: 12px;
+            margin: 25px 30px;
+            overflow: hidden;
+        }
+        
+        .table-header {
+            padding: 20px 25px;
+            border-bottom: 2px solid #2d3a5e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-header h3 {
+            color: white;
+            font-size: 18px;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .table-header span {
+            background: #2d3a5e;
+            color: #94a3b8;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            text-align: left;
+            padding: 15px 25px;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #2d3a5e;
+        }
+        
+        td {
+            padding: 15px 25px;
+            color: #e2e8f0;
+            border-bottom: 1px solid #2d3a5e;
+            transition: background 0.2s;
+        }
+        
+        tr:hover td {
+            background: #1f2a41;
+        }
+        
+        .cue-cell {
+            color: #38bdf8;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .status-ok { color: #22c55e; font-weight: 600; }
+        .status-lento { color: #eab308; font-weight: 600; }
+        .status-caido { color: #ef4444; font-weight: 600; }
+        .status-sd { color: #6b7280; font-weight: 600; }
+        
+        /* ===== BOTONES CON COLORES ===== */
+        .action-ver {
+            background: #2563eb;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1px solid #3b82f6;
+            display: inline-block;
+        }
+        
+        .action-ver:hover {
+            background: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(37, 99, 235, 0.4);
+            color: white;
+        }
+        
+        .action-ticket {
+            background: #b91c1c;
+            color: white;
+            padding: 6px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1px solid #dc2626;
+            display: inline-block;
+        }
+        
+        .action-ticket:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(220, 38, 38, 0.4);
+            color: white;
+        }
+        
+        .action-ver i, .action-ticket i {
+            margin-right: 4px;
+            font-size: 0.7rem;
+        }
+        
+        .separator {
+            color: #2d3a5e;
+            margin: 0 8px;
+        }
+        
+        /* Paginación */
+        .pagination-container {
+            margin: 25px 30px;
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
+        
+        .page-btn {
+            background: #1a2639;
+            border: 1px solid #2d3a5e;
+            color: #94a3b8;
+            padding: 8px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        
+        .page-btn:hover {
+            background: #2d3a5e;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .page-btn.active {
+            background: #2563eb;
+            border-color: #2563eb;
+            color: white;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            background: #1a2639;
+            border: 1px solid #2d3a5e;
+            border-radius: 12px;
+            padding: 60px 30px;
+            text-align: center;
+            margin: 25px 30px;
+        }
+        
+        .empty-state i {
+            font-size: 48px;
+            color: #2d3a5e;
+        }
+        
+        .empty-state h5 {
+            color: #94a3b8;
+            margin-top: 15px;
+        }
+        
+        .empty-state p {
+            color: #4b5563;
+        }
+        
+        /* Footer */
+        .noc-footer {
+            background: #0f1527;
+            border-top: 1px solid #2d3a5e;
+            padding: 20px 30px;
+            margin-top: 50px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                margin: 15px;
+            }
+            
+            .search-container {
+                margin: 15px;
+            }
+            
+            .table-container {
+                margin: 15px;
+                overflow-x: auto;
+            }
+            
+            .nav-menu {
+                overflow-x: auto;
+                padding: 10px 0;
+            }
+            
+            .nav-link {
+                padding: 12px 16px;
+                font-size: 14px;
+                white-space: nowrap;
+            }
+            
+            .action-ver, .action-ticket {
+                padding: 4px 10px;
+                font-size: 0.75rem;
+            }
+            #resultados-busqueda{
+                background:#1e1e1e;
+                border-radius:8px;
+                margin-top:5px;
+                max-height:300px;
+                overflow-y:auto;
+            }
+
+            .resultado-item{
+                padding:10px;
+                border-bottom:1px solid #333;
+                cursor:pointer;
+            }
+
+            .resultado-item:hover{
+                background:#2c2c2c;
+            }
+	}
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="noc-header d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-3">
+            <h1>SISTEMA NOC</h1>
+            <span class="badge">24/7 MONITOREO</span>
+        </div>
+        <div class="text-white-50">
+            <i class="bi bi-circle-fill text-success me-2" style="font-size: 10px;"></i>
+            <span class="me-3">OPERATIVO</span>
+            <span>v2.0</span>
+        </div>
+    </div>
+
+    <!-- Navegación -->
+    <nav class="noc-nav">
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="{% url 'lista_escuelas' %}" class="nav-link active">🏫 Escuelas</a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'lista_tickets' %}" class="nav-link">🎫 Tickets</a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'consultar_ticket' %}" class="nav-link">🔍 Consultar Ticket</a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'dashboard_noc' %}" class="nav-link">📊 Dashboard</a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Contenido principal -->
+    
+<div>
+
+    <!-- Barra de búsqueda -->
+    <div class="search-container">
+        <form method="get">
+            <div class="row g-3">
+
+                <div class="col-md-10">
+                    <input type="text"
+                           id="busqueda"
+                           name="q"
+                           value="{{ q }}"
+                           class="search-input"
+                           placeholder="BUSCAR POR CUE, NOMBRE, LOCALIDAD..."
+                           autocomplete="off">
+                </div>
+
+                <div class="col-md-2">
+                    <button type="submit" class="btn-exec">
+                        BUSCAR
+                    </button>
+                </div>
+
+            </div>
+        </form>
+
+        <div id="resultados-busqueda"></div>
+
+    </div>
+
+</div>  
+                
+                {% if q %}
+                <div class="d-flex align-items-center gap-3 mt-3 pt-3" style="border-top: 1px solid #2d3a5e;">
+                    <span class="badge" style="background: #2563eb; color: white; padding: 5px 12px;">{{ escuelas|length }} RESULTADOS</span>
+                    <span style="color: #94a3b8;">BÚSQUEDA: "{{ q|upper }}"</span>
+                    <a href="{% url 'lista_escuelas' %}" class="ms-auto text-decoration-none" style="color: #94a3b8;">
+                        LIMPIAR
+                    </a>
+                </div>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="dashboard-grid">
+            <!-- Operativas -->
+            <div class="noc-card">
+                <div class="card-header">
+                    <span class="led led-green"></span>
+                    <span class="card-title">OPERATIVAS</span>
+                </div>
+                <div class="card-number" style="color: #22c55e;">{{ total_escuelas }}</div>
+                <div class="card-status" style="color: #22c55e;">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <span>TOTAL DE NODOS</span>
+                </div>
+            </div>
+            
+            <!-- Tickets activos -->
+            <div class="noc-card">
+                <div class="card-header">
+                    <span class="led led-yellow"></span>
+                    <span class="card-title">TICKETS ACTIVOS</span>
+                </div>
+                <div class="card-number" style="color: #eab308;">{{ tickets_activos }}</div>
+                <div class="card-status" style="color: #eab308;">
+                    <i class="bi bi-ticket-fill"></i>
+                    <span>{{ tickets_abiertos }} ABIERTOS · {{ tickets_derivados }} DERIVADOS</span>
+                </div>
+            </div>
+            
+            <!-- Sin conexión -->
+            <div class="noc-card">
+                <div class="card-header">
+                    <span class="led led-red"></span>
+                    <span class="card-title">SIN CONEXIÓN</span>
+                </div>
+                <div class="card-number" style="color: #ef4444;">{{ sin_conexion }}</div>
+                <div class="card-status" style="color: #ef4444;">
+                    <i class="bi bi-wifi-off"></i>
+                    <span>FUERA DE SERVICIO</span>
+                </div>
+            </div>
+        </div>
+
+        {% if escuelas %}
+        <!-- Tabla -->
+        <div class="table-container">
+            <div class="table-header">
+                <h3>LISTADO DE NODOS</h3>
+                <span>{{ escuelas|length }} de {{ total_escuelas }} REGISTROS</span>
+            </div>
+            
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>CUE</th>
+                            <th>ESCUELA</th>
+                            <th>LOCALIDAD</th>
+                            <th>DPTO</th>
+                            <th>PREDIO</th>
+                            <th>ESTADO</th>
+                            <th>ACCIONES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in escuelas %}
+                        <tr>
+                            <td style="color: #64748b;">{{ forloop.counter }}</td>
+                            <td class="cue-cell">{{ e.cue }}</td>
+                            <td>
+                                <div>{{ e.escuelas|truncatechars:40 }}</div>
+                                {% if e.nivel %}
+                                <small style="color: #64748b;">{{ e.nivel }}</small>
+                                {% endif %}
+                            </td>
+                            <td>{{ e.localidad }}</td>
+                            <td>{{ e.departamento }}</td>
+                            <td>
+                                {% if e.predio_final %}
+                                    {{ e.predio_final }}
+                                {% else %}
+                                    <span style="color: #4b5563;">{{ e.predio|default:"-" }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if e.estado == "OK" %}
+                                    <span class="status-ok">OPERATIVO</span>
+                                {% elif e.estado == "LENTO" %}
+                                    <span class="status-lento">LENTO</span>
+                                {% elif e.estado == "CAIDO" %}
+                                    <span class="status-caido">CAÍDO</span>
+                                {% else %}
+                                    <span class="status-sd">S/D</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'detalle_escuela' e.id %}" class="action-ver">
+                                        <i class="bi bi-eye"></i> VER
+                                    </a>
+                                    <a href="{% url 'nuevo_ticket' e.id %}" class="action-ticket">
+                                        <i class="bi bi-ticket"></i> TICKET
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Paginación -->
+        {% if page_range %}
+        <div class="pagination-container">
+            {% if escuelas.has_previous %}
+                <a href="?q={{ q }}&page=1" class="page-btn">«</a>
+                <a href="?q={{ q }}&page={{ escuelas.previous_page_number }}" class="page-btn">‹</a>
+            {% endif %}
+
+            {% for num in page_range %}
+                <a href="?q={{ q }}&page={{ num }}" class="page-btn {% if escuelas.number == num %}active{% endif %}">{{ num }}</a>
+            {% endfor %}
+
+            {% if escuelas.has_next %}
+                <a href="?q={{ q }}&page={{ escuelas.next_page_number }}" class="page-btn">›</a>
+                <a href="?q={{ q }}&page={{ escuelas.paginator.num_pages }}" class="page-btn">»</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- Empty state -->
+        <div class="empty-state">
+            <i class="bi bi-building"></i>
+            <h5>NO SE ENCONTRARON NODOS</h5>
+            <p>
+                {% if q %}
+                BÚSQUEDA: "{{ q|upper }}" SIN RESULTADOS
+                {% else %}
+                NO HAY ESCUELAS REGISTRADAS
+                {% endif %}
+            </p>
+            {% if q %}
+            <a href="{% url 'lista_escuelas' %}" class="btn-exec" style="width: auto; padding: 10px 30px; text-decoration: none; display: inline-block;">
+                VER TODOS
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="noc-footer">
+        <div>Sistema NOC - Centro de Operaciones de Red | Versión 2.0</div>
+        <div class="mt-2">© {% now "Y" %} - Todos los derechos reservados</div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+
+const inputBusqueda = document.getElementById("busqueda")
+const resultadosDiv = document.getElementById("resultados-busqueda")
+
+inputBusqueda.addEventListener("keyup", function(){
+
+    const query = this.value
+
+    if(query.length < 2){
+        resultadosDiv.innerHTML = ""
+        return
+    }
+
+    fetch(`/buscar-escuelas/?q=${query}`)
+    .then(response => response.json())
+    .then(data => {
+
+        resultadosDiv.innerHTML = ""
+
+        data.forEach(escuela => {
+
+            const item = document.createElement("div")
+
+            item.classList.add("resultado-item")
+
+            item.innerHTML = `
+                <strong>${escuela.nombre}</strong><br>
+                CUE: ${escuela.cue} | ${escuela.localidad}
+            `
+
+            item.onclick = () => {
+                inputBusqueda.value = escuela.nombre
+                resultadosDiv.innerHTML = ""
+            }
+
+            resultadosDiv.appendChild(item)
+
+        })
+
+    })
+
+})
+
+</script>>
+</body>
+:</html>

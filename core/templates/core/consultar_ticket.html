@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultar Ticket - NOC</title>
+    
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #0a0f1e;
+            font-family: 'Segoe UI', 'Roboto', 'Courier New', monospace;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        
+        /* Header */
+        .noc-header {
+            background: #0f1527;
+            border-bottom: 3px solid #2563eb;
+            padding: 15px 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .noc-header h1 {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+        
+        .noc-header .badge {
+            background: #2563eb;
+            color: white;
+            font-size: 12px;
+            padding: 5px 10px;
+        }
+        
+        /* Navegación */
+        .noc-nav {
+            background: #0f1527;
+            border-bottom: 1px solid #2d3a5e;
+            padding: 0 30px;
+        }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 5px;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 16px 24px;
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+        
+        .nav-link:hover {
+            color: #38bdf8;
+            background: #1a2639;
+        }
+        
+        .nav-link.active {
+            color: white;
+            border-bottom-color: #2563eb;
+            background: #1a2639;
+        }
+        
+        /* Contenedor principal */
+        .main-content {
+            padding: 40px 30px;
+            min-height: calc(100vh - 200px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Card de consulta */
+        .consult-card {
+            background: #1a2639;
+            border: 1px solid #2d3a5e;
+            border-radius: 16px;
+            padding: 35px;
+            max-width: 500px;
+            width: 100%;
+            margin: 0 auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+        
+        .consult-title {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .consult-title h2 {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+        
+        .consult-title p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+        
+        /* Formulario */
+        .form-label {
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .input-group-custom {
+            display: flex;
+            align-items: stretch;
+            margin-bottom: 10px;
+        }
+        
+        .input-group-text {
+            background: #0f1527;
+            border: 1px solid #2d3a5e;
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+            padding: 12px 15px;
+            color: #2563eb;
+            font-weight: 700;
+            font-size: 15px;
+        }
+        
+        .form-control-custom {
+            flex: 1;
+            background: #0f1527;
+            border: 1px solid #2d3a5e;
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+            padding: 12px 15px;
+            color: #e2e8f0;
+            font-size: 15px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.2s;
+        }
+        
+        .form-control-custom:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+            background: #1a2639;
+        }
+        
+        .form-control-custom::placeholder {
+            color: #4b5563;
+        }
+        
+        .form-text-custom {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .form-text-custom i {
+            color: #2563eb;
+        }
+        
+        /* Botones */
+        .btn-primary-custom {
+            background: #2563eb;
+            color: white;
+            border: 1px solid #3b82f6;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            width: 100%;
+            transition: all 0.2s;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary-custom:hover {
+            background: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+        }
+        
+        .btn-secondary-custom {
+            background: #2d3a5e;
+            color: #94a3b8;
+            border: 1px solid #3b4a6b;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 15px;
+            width: 100%;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-secondary-custom:hover {
+            background: #3b4a6b;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        .info-footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #94a3b8;
+            font-size: 12px;
+        }
+        
+        /* Footer */
+        .noc-footer {
+            background: #0f1527;
+            border-top: 1px solid #2d3a5e;
+            padding: 20px 30px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 20px 15px;
+            }
+            
+            .consult-card {
+                padding: 25px 20px;
+            }
+            
+            .consult-title h2 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="noc-header">
+        <div class="d-flex align-items-center gap-3">
+            <h1>SISTEMA NOC</h1>
+            <span class="badge">24/7 MONITOREO</span>
+        </div>
+        <div class="text-white-50">
+            <i class="bi bi-circle-fill text-success me-2" style="font-size: 10px;"></i>
+            <span class="me-3">OPERATIVO</span>
+            <span>v2.0</span>
+        </div>
+    </div>
+
+    <!-- Navegación -->
+    <nav class="noc-nav">
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="{% url 'lista_escuelas' %}" class="nav-link">🏫 Escuelas</a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'lista_tickets' %}" class="nav-link">🎫 Tickets</a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'consultar_ticket' %}" class="nav-link active">🔍 Consultar Ticket</a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'dashboard_noc' %}" class="nav-link">📊 Dashboard</a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="main-content">
+        <div class="consult-card">
+            <div class="consult-title">
+                <h2>Consultar Ticket</h2>
+                <p>Ingresá el número de ticket para ver su estado</p>
+            </div>
+            
+            <form method="post" action="{% url 'consultar_ticket' %}">
+                {% csrf_token %}
+                
+                <div class="mb-4">
+                    <label class="form-label">Número de Ticket</label>
+                    <div class="input-group-custom">
+                        <span class="input-group-text">NOC-</span>
+                        <input type="text" 
+                               id="ticket_suffix"
+                               class="form-control-custom" 
+                               placeholder="XXXXXXXX" 
+                               title="Ingresá caracteres después de NOC-"
+                               required>
+                        <input type="hidden" name="ticket" id="ticket_completo">
+                    </div>
+                    <div class="form-text-custom">
+                        <i class="bi bi-info-circle"></i>
+                        Solo los 8 caracteres (ej: ABC123DE) → NOC-ABC123DE
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-3">
+                    <button type="submit" class="btn-primary-custom">
+                        <i class="bi bi-search"></i> Consultar Ticket
+                    </button>
+                    
+                    <a href="{% url 'lista_tickets' %}" class="btn-secondary-custom">
+                        <i class="bi bi-list-ul"></i> Ver todos los tickets
+                    </a>
+                </div>
+            </form>
+            
+            <div class="info-footer">
+                <i class="bi bi-clock-history me-1"></i>
+                Los tickets tienen seguimiento por 15 días
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="noc-footer">
+        <div>Sistema NOC · v2.0</div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ticketSuffix = document.getElementById('ticket_suffix');
+            const ticketCompleto = document.getElementById('ticket_completo');
+            const form = document.querySelector('form');
+            
+            if (ticketSuffix && ticketCompleto && form) {
+                // Auto-mayúsculas y solo caracteres válidos
+                ticketSuffix.addEventListener('input', function(e) {
+                    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                });
+                
+                // Antes de enviar el formulario, armamos el ticket completo
+                form.addEventListener('submit', function(e) {
+                    let suffix = ticketSuffix.value.trim();
+                    
+                    if (suffix.length === 0) {
+                        e.preventDefault();
+                        alert('Por favor ingresá el número de ticket');
+                        ticketSuffix.focus();
+                        return false;
+                    }
+                    
+                    form.addEventListener('submit', function(e) {
+
+                    let suffix = ticketSuffix.value.trim()
+
+                    if (suffix.length < 3) {
+                    e.preventDefault()
+                    alert('Ingresá al menos 3 caracteres del ticket')
+                    ticketSuffix.focus()
+                    return false
+    }
+
+    const ticketCompletoValue = 'NOC-' + suffix
+    ticketCompleto.value = ticketCompletoValue
+
+})                    }
+                    
+                    // Armar el ticket completo con el prefijo NOC-
+                    const ticketCompletoValue = 'NOC-' + suffix;
+                    ticketCompleto.value = ticketCompletoValue;
+                    
+                    return true;
+                });
+            }
+        });
+    </script>
+</body>
+</html>

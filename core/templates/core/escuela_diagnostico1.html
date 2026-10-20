@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Escuela</title>
+    <style>
+        body { background:#0e1621; color:#eee; font-family:Arial; }
+        .card { background:#1b2636; padding:20px; margin-bottom:20px; border-radius:10px; }
+        h2 { margin-top:0 }
+        .btn { padding:8px 14px; background:#2e8bff; color:white; border:none; }
+        .ok { color:#00ff99; }
+        .warn { color:orange; }
+        .bad { color:red; }
+    </style>
+</head>
+
+<body>
+
+<a href="/escuelas/">← volver</a>
+
+<div class="card">
+    <h2>{{ escuela.escuelas }}</h2>
+    <p>
+        <b>CUE:</b> {{ escuela.cue }} |
+        <b>Localidad:</b> {{ escuela.localidad }} |
+        <b>Predio:</b> {{ escuela.predio }}
+    </p>
+</div>
+
+<div class="card">
+    <h3>Diagnóstico</h3>
+
+    <form method="post">
+        {% csrf_token %}
+
+        Navega:
+        <select name="navega">
+            <option value="">--</option>
+            <option value="1">Sí</option>
+            <option value="0">No</option>
+        </select><br><br>
+
+        Navega lento:
+        <select name="navega_lento">
+            <option value="">--</option>
+            <option value="1">Sí</option>
+            <option value="0">No</option>
+        </select><br><br>
+
+        Ve red estudiante:
+        <select name="ve_red_estudiante">
+            <option value="">--</option>
+            <option value="1">Sí</option>
+            <option value="0">No</option>
+        </select><br><br>
+
+        Ve red docente:
+        <select name="ve_red_docente">
+            <option value="">--</option>
+            <option value="1">Sí</option>
+            <option value="0">No</option>
+        </select><br><br>
+
+        <button class="btn">Diagnosticar</button>
+    </form>
+</div>
+
+{% if incidencia %}
+<div class="card">
+    <h3>Resultado</h3>
+    <p class="bad">{{ incidencia.diagnostico }}</p>
+</div>
+{% endif %}
+
+</body>
+</html>
+
