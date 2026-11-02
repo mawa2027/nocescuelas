@@ -445,15 +445,28 @@
             <span class="badge">24/7 MONITOREO</span>
         </div>
         <div class="text-white-50">
-            <i class="bi bi-circle-fill text-success me-2" style="font-size: 10px;"></i>
-            <span class="me-3">OPERATIVO</span>
-            <span>v2.0</span>
-        </div>
+            {% if ultima_sync %}
+	    <i class="bi bi-circle-fill text-success me-2" style="font-size: 10px;"></i>
+            <span class="me-3">MERAKI · {{ ultima_sync|date:"d/m H:i" }}</span>
+            {% else %}
+            <i class="bi bi-circle-fill text-secondary me-2" style="font-size: 10px;"></i>
+            <span class="me-3">SIN SINCRONIZAR</span>
+            {% endif %}
+            <span>v2.0</span>     
+	</div>
     </div>
 
     <!-- Navegación -->
     <nav class="noc-nav">
         <ul class="nav-menu">
+	    <li class="nav-item" style="margin-left: auto;">
+                <form method="post" action="{% url 'logout' %}" style="margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="nav-link" style="background: none; border: 0; cursor: pointer;">
+                        👤 {{ user.username }} · Salir
+                    </button>
+                </form>
+            </li>
             <li class="nav-item">
                 <a href="{% url 'lista_escuelas' %}" class="nav-link active">🏫 Escuelas</a>
             </li>
@@ -505,7 +518,7 @@
                 
                 {% if q %}
                 <div class="d-flex align-items-center gap-3 mt-3 pt-3" style="border-top: 1px solid #2d3a5e;">
-                    <span class="badge" style="background: #2563eb; color: white; padding: 5px 12px;">{{ escuelas|length }} RESULTADOS</span>
+                    <span class="badge" style="background: #2563eb; color: white; padding: 5px 12px;">{{ total_resultados }} RESULTADOS</span>
                     <span style="color: #94a3b8;">BÚSQUEDA: "{{ q|upper }}"</span>
                     <a href="{% url 'lista_escuelas' %}" class="ms-auto text-decoration-none" style="color: #94a3b8;">
                         LIMPIAR
@@ -516,6 +529,7 @@
         </div>
 
         <!-- Dashboard -->
+             
         <div class="dashboard-grid">
             <!-- Operativas -->
             <div class="noc-card">
@@ -523,48 +537,62 @@
                     <span class="led led-green"></span>
                     <span class="card-title">OPERATIVAS</span>
                 </div>
-                <div class="card-number" style="color: #22c55e;">{{ total_escuelas }}</div>
+                <div class="card-number" style="color: #22c55e;">{{ operativas }}</div>
                 <div class="card-status" style="color: #22c55e;">
                     <i class="bi bi-check-circle-fill"></i>
-                    <span>TOTAL DE NODOS</span>
+                    <span>DE {{ total_escuelas }} ESCUELAS</span>
                 </div>
             </div>
-            
+
             <!-- Tickets activos -->
-            <div class="noc-card">
-                <div class="card-header">
-                    <span class="led led-yellow"></span>
-                    <span class="card-title">TICKETS ACTIVOS</span>
+            <a href="{% url 'lista_tickets' %}" title="Ver tickets" style="text-decoration: none; color: inherit; display: block;">
+                <div class="noc-card" style="height: 100%;">
+                    <div class="card-header">
+                        <span class="led led-yellow"></span>
+                        <span class="card-title">TICKETS ACTIVOS</span>
+                    </div>
+                    <div class="card-number" style="color: #eab308;">{{ tickets_activos }}</div>
+                    <div class="card-status" style="color: #eab308;">
+                        <i class="bi bi-ticket-fill"></i>
+                        <span>{{ tickets_abiertos }} ABIERTOS · {{ tickets_derivados }} DERIVADOS</span>
+                    </div>
                 </div>
-                <div class="card-number" style="color: #eab308;">{{ tickets_activos }}</div>
-                <div class="card-status" style="color: #eab308;">
-                    <i class="bi bi-ticket-fill"></i>
-                    <span>{{ tickets_abiertos }} ABIERTOS · {{ tickets_derivados }} DERIVADOS</span>
-                </div>
-            </div>
-            
+            </a>
+
             <!-- Sin conexión -->
-            <div class="noc-card">
-                <div class="card-header">
-                    <span class="led led-red"></span>
-                    <span class="card-title">SIN CONEXIÓN</span>
+            <a href="{% url 'caidas_meraki' %}?estado=caida" title="Ver escuelas sin conexión" style="text-decoration: none; color: inherit; display: block;">
+                <div class="noc-card" style="height: 100%;">
+                    <div class="card-header">
+                        <span class="led led-red"></span>
+                        <span class="card-title">SIN CONEXIÓN</span>
+                    </div>
+                    <div class="card-number" style="color: #ef4444;">{{ sin_conexion }}</div>
+                    <div class="card-status" style="color: #ef4444;">
+                        <i class="bi bi-wifi-off"></i>
+                        <span>{{ lentas }} LENTAS · {{ sin_datos }} S/D{% if ultima_sync %} · {{ ultima_sync|date:"d/m H:i" }}{% endif %}</span>
+                    </div>
                 </div>
-                <div class="card-number" style="color: #ef4444;">{{ sin_conexion }}</div>
-                <div class="card-status" style="color: #ef4444;">
-                    <i class="bi bi-wifi-off"></i>
-                    <span>FUERA DE SERVICIO</span>
-                </div>
-            </div>
+            </a>
+        </div>
+                <!-- Filtros por estado -->
+        <div style="margin: 0 30px; display: flex; gap: 8px; flex-wrap: wrap;">
+            {% for valor, texto, n in filtros %}
+            <a href="?estado={{ valor }}{% if q %}&q={{ q|urlencode }}{% endif %}"
+               style="padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; text-decoration: none; border: 1px solid #2d3a5e; {% if estado == valor %}background: #2563eb; color: white;{% else %}background: #1a2639; color: #94a3b8;{% endif %}">
+                {{ texto }} ({{ n }})
+            </a>
+            {% endfor %}
         </div>
 
         {% if escuelas %}
+        
         <!-- Tabla -->
         <div class="table-container">
             <div class="table-header">
                 <h3>LISTADO DE NODOS</h3>
-                <span>{{ escuelas|length }} de {{ total_escuelas }} REGISTROS</span>
+                <span>{{ escuelas.start_index }}-{{ escuelas.end_index }} de {{ total_resultados }} REGISTROS</span>
             </div>
-            
+
             <div class="table-responsive">
                 <table>
                     <thead>
@@ -576,13 +604,15 @@
                             <th>DPTO</th>
                             <th>PREDIO</th>
                             <th>ESTADO</th>
+                            <th>ENLACE</th>
+                            <th>SIN CONTACTO</th>
                             <th>ACCIONES</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for e in escuelas %}
                         <tr>
-                            <td style="color: #64748b;">{{ forloop.counter }}</td>
+                            <td style="color: #64748b;">{{ escuelas.start_index|add:forloop.counter0 }}</td>
                             <td class="cue-cell">{{ e.cue }}</td>
                             <td>
                                 <div>{{ e.escuelas|truncatechars:40 }}</div>
@@ -610,6 +640,8 @@
                                     <span class="status-sd">S/D</span>
                                 {% endif %}
                             </td>
+                            <td>{{ e.tipo }}</td>
+                            <td>{{ e.sin_contacto|default:"-" }}</td>
                             <td>
                                 <div class="d-flex gap-2">
                                     <a href="{% url 'detalle_escuela' e.id %}" class="action-ver">
@@ -631,17 +663,17 @@
         {% if page_range %}
         <div class="pagination-container">
             {% if escuelas.has_previous %}
-                <a href="?q={{ q }}&page=1" class="page-btn">«</a>
-                <a href="?q={{ q }}&page={{ escuelas.previous_page_number }}" class="page-btn">‹</a>
+                <a href="?q={{ q|urlencode }}&estado={{ estado }}&page=1" class="page-btn">«</a>
+                <a href="?q={{ q|urlencode }}&estado={{ estado }}&page={{ escuelas.previous_page_number }}" class="page-btn">‹</a>
             {% endif %}
 
             {% for num in page_range %}
-                <a href="?q={{ q }}&page={{ num }}" class="page-btn {% if escuelas.number == num %}active{% endif %}">{{ num }}</a>
+                <a href="?q={{ q|urlencode }}&estado={{ estado }}&page={{ num }}" class="page-btn {% if escuelas.number == num %}active{% endif %}">{{ num }}</a>
             {% endfor %}
 
             {% if escuelas.has_next %}
-                <a href="?q={{ q }}&page={{ escuelas.next_page_number }}" class="page-btn">›</a>
-                <a href="?q={{ q }}&page={{ escuelas.paginator.num_pages }}" class="page-btn">»</a>
+                <a href="?q={{ q|urlencode }}&estado={{ estado }}&page={{ escuelas.next_page_number }}" class="page-btn">›</a>
+                <a href="?q={{ q|urlencode }}&estado={{ estado }}&page={{ escuelas.paginator.num_pages }}" class="page-btn">»</a>
             {% endif %}
         </div>
         {% endif %}
@@ -689,7 +721,7 @@ inputBusqueda.addEventListener("keyup", function(){
         return
     }
 
-    fetch(`/buscar-escuelas/?q=${query}`)
+    fetch("/buscar-escuelas/?q=" + encodeURIComponent(query))
     .then(response => response.json())
     .then(data => {
 

@@ -1,677 +1,158 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NOC - Ticket {{ incidencia.ticket }}</title>
-    
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background: #0a0f1e;
-            font-family: 'Segoe UI', 'Roboto', 'Courier New', monospace;
-            color: #e2e8f0;
-            min-height: 100vh;
-        }
-        
-        /* Header */
-        .noc-header {
-            background: #0f1527;
-            border-bottom: 3px solid #2563eb;
-            padding: 15px 30px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-        }
-        
-        .noc-header h1 {
-            color: white;
-            font-size: 24px;
-            font-weight: 700;
-            margin: 0;
-            letter-spacing: 1px;
-        }
-        
-        .noc-header .badge {
-            background: #2563eb;
-            color: white;
-            font-size: 12px;
-            padding: 5px 10px;
-        }
-        
-        /* Navegación */
-        .noc-nav {
-            background: #0f1527;
-            border-bottom: 1px solid #2d3a5e;
-            padding: 0 30px;
-        }
-        
-        .nav-menu {
-            display: flex;
-            list-style: none;
-            gap: 5px;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .nav-link {
-            display: block;
-            padding: 16px 24px;
-            color: #94a3b8;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 15px;
-            transition: all 0.2s;
-            border-bottom: 3px solid transparent;
-        }
-        
-        .nav-link:hover {
-            color: #38bdf8;
-            background: #1a2639;
-        }
-        
-        .nav-link.active {
-            color: white;
-            border-bottom-color: #2563eb;
-            background: #1a2639;
-        }
-        
-        /* Contenedor principal - IGUAL AL LISTADO */
-        .main-container {
-            max-width: 1800px;
-            margin: 25px auto;
-            padding: 0 30px;
-        }
-        
-        /* Cards - MISMO ESTILO QUE EL LISTADO */
-        .noc-card {
-            background: #1a2639;
-            border: 1px solid #2d3a5e;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 25px;
-            transition: all 0.3s;
-        }
-        
-        .noc-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.4);
-            border-color: #3b82f6;
-        }
-        
-        /* Header de card */
-        .card-header-custom {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        
-        .card-header-custom i {
-            color: #38bdf8;
-            font-size: 1.5rem;
-        }
-        
-        .card-header-custom h3 {
-            color: #94a3b8;
-            font-size: 14px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            margin: 0;
-            text-transform: uppercase;
-        }
-        
-        /* Estado del ticket - IGUAL A LAS CARDS DEL DASHBOARD */
-        .status-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-            background: #1a2639;
-            border: 1px solid #2d3a5e;
-            border-radius: 12px;
-            padding: 20px;
-        }
-        
-        .status-led {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-        
-        .status-led-green { 
-            background: #22c55e; 
-            box-shadow: 0 0 12px #22c55e;
-        }
-        .status-led-yellow { 
-            background: #eab308; 
-            box-shadow: 0 0 12px #eab308;
-        }
-        .status-led-blue { 
-            background: #3b82f6; 
-            box-shadow: 0 0 12px #3b82f6;
-        }
-        
-        .status-title {
-            color: #94a3b8;
-            font-size: 14px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            flex: 1;
-        }
-        
-        .status-badge {
-            font-size: 14px;
-            font-weight: 700;
-            font-family: 'Courier New', monospace;
-        }
-        
-        .status-badge-green { color: #22c55e; }
-        .status-badge-yellow { color: #eab308; }
-        .status-badge-blue { color: #3b82f6; }
-        
-        /* Grid de fechas - ESTILO DASHBOARD */
-        .fechas-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        .fecha-item {
-            background: #0f1527;
-            border: 1px solid #2d3a5e;
-            border-radius: 8px;
-            padding: 15px;
-        }
-        
-        .fecha-label {
-            color: #94a3b8;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            margin-bottom: 5px;
-        }
-        
-        .fecha-valor {
-            color: white;
-            font-size: 14px;
-            font-family: 'Courier New', monospace;
-        }
-        
-        /* Grid de información - 3 COLUMNAS COMO EL LISTADO */
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
-            margin-bottom: 25px;
-        }
-        
-        /* Listas */
-        .info-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-        
-        .info-list li {
-            padding: 12px 0;
-            border-bottom: 1px solid #2d3a5e;
-            color: #e2e8f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }   
-	}
-        
-        .info-list li:last-child {
-            border-bottom: none;
-        }
-        
-        .info-list strong {
-            color: #94a3b8;
-            font-weight: 600;
-            min-width: 100px;
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .info-list span {
-            color: white;
-            font-family: 'Courier New', monospace;
-            text-align: right;
-	}
-        
-        /* Diagnóstico */
-        .diagnostico-text {
-            color: #e2e8f0;
-            font-size: 14px;
-            line-height: 1.6;
-        }
-        
-        /* Detalle técnico - GRID DE 4 COLUMNAS */
-        .tech-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-        }
-        
-        .tech-item {
-            background: #0f1527;
-            border: 1px solid #2d3a5e;
-            border-radius: 8px;
-            padding: 15px;
-            transition: all 0.2s;
-        }
-        
-        .tech-item:hover {
-            border-color: #3b82f6;
-            transform: translateY(-2px);
-        }
-        
-        .tech-label {
-            color: #94a3b8;
-            font-size: 11px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-        
-        .tech-value {
-            font-size: 16px;
-            font-weight: 600;
-            font-family: 'Courier New', monospace;
-        }
-        
-        .tech-value-yes { color: #22c55e; }
-        .tech-value-no { color: #ef4444; }
-        
-        /* Botones de acción - IGUAL AL LISTADO */
-        .btn-derivar {
-            background: #b91c1c;
-            color: white;
-            border: 1px solid #dc2626;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
-            width: 100%;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .btn-derivar:hover {
-            background: #dc2626;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
-        }
-        
-        .btn-cerrar {
-            background: #059669;
-            color: white;
-            border: 1px solid #10b981;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
-            width: 100%;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .btn-cerrar:hover {
-            background: #10b981;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-        
-        .btn-disabled {
-            background: #2d3a5e;
-            color: #94a3b8;
-            border: 1px solid #3b4a6b;
-            padding: 10px 20px;
-            border-radius: 6px;
-            font-weight: 600;
-            font-size: 13px;
-            width: 100%;
-            cursor: not-allowed;
-            text-transform: uppercase;
-        }
-        
-        .form-select-custom {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #2d3a5e;
-            border-radius: 6px;
-            font-size: 14px;
-            color: white;
-            background: #0f1527;
-            margin-bottom: 20px;
-        }
-        
-        .form-select-custom:focus {
-            outline: none;
-            border-color: #3b82f6;
-        }
-        
-        .alert-info {
-            background: #0f1527;
-            border: 1px solid #2563eb;
-            border-radius: 8px;
-            padding: 15px;
-            color: #94a3b8;
-            margin-bottom: 20px;
-            font-size: 14px;
-        }
-        
-        /* Footer */
-        .noc-footer {
-            background: #0f1527;
-            border-top: 1px solid #2d3a5e;
-            padding: 20px 30px;
-            margin-top: 50px;
-            text-align: center;
-            color: #94a3b8;
-            font-size: 13px;
-        }
-        
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .info-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .tech-grid {
-                grid-template-columns: repeat(3, 1fr);
-            }
-        }
-        
-        @media (max-width: 768px) {
-            .info-grid {
-                grid-template-columns: 1fr;
-            }
-            .tech-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .fechas-grid {
-                grid-template-columns: 1fr;
-            }
-            .status-container {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ticket {{ incidencia.ticket }}</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f2f4f7; margin: 0; color: #222; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 16px; }
+  a { color: #0b5cad; }
+  .card { background: #fff; border: 1px solid #d8dde3; border-radius: 8px; padding: 16px; margin: 14px 0; }
+  h1 { margin: 0 0 4px; font-size: 24px; }
+  h2 { margin: 0 0 10px; font-size: 17px; border-bottom: 1px solid #e3e6ea; padding-bottom: 6px; }
+  table { width: 100%; border-collapse: collapse; }
+  td { padding: 5px 8px; border-bottom: 1px solid #f0f1f3; vertical-align: top; }
+  td:first-child { width: 38%; color: #555; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 13px; font-weight: bold; color: #fff; }
+  .abierto { background: #c62828; }
+  .proceso { background: #ef8f00; }
+  .cerrado { background: #1565c0; }
+  .rechazado { background: #757575; }
+  .venc { color: #c62828; font-weight: bold; }
+  .nota { white-space: pre-wrap; background: #f7f8fa; padding: 8px; border-radius: 6px; margin: 8px 0; }
+  .deriv { border: 1px solid #d8dde3; border-radius: 6px; padding: 10px; margin: 10px 0; }
+  select, input[type=text], textarea { padding: 6px; border: 1px solid #bbb; border-radius: 4px; font-size: 14px; }
+  textarea { width: 100%; box-sizing: border-box; }
+  button { padding: 7px 14px; border: 0; border-radius: 4px; color: #fff; background: #0b5cad; font-size: 14px; cursor: pointer; }
+  button.verde { background: #2e7d32; }
+  .fila { margin: 8px 0; }
+</style>
 </head>
 <body>
-    <!-- Header -->
-    <div class="noc-header d-flex justify-content-between align-items-center">
-        <div class="d-flex align-items-center gap-3">
-            <h1>SISTEMA NOC</h1>
-            <span class="badge">24/7 MONITOREO</span>
-        </div>
-        <div class="text-white-50">
-            <i class="bi bi-circle-fill text-success me-2" style="font-size: 10px;"></i>
-            <span class="me-3">OPERATIVO</span>
-            <span>v2.0</span>
-        </div>
+<div class="wrap">
+
+  <p>
+    <a href="{% url 'lista_tickets' %}">&larr; Tickets</a> ·
+    <a href="{% url 'detalle_escuela' incidencia.escuela.id %}">Ver escuela</a>
+  </p>
+
+  <div class="card">
+    <h1>Ticket {{ incidencia.ticket }}</h1>
+    <span class="badge {% if incidencia.estado == 'RESUELTO' or incidencia.estado == 'CERRADO' %}cerrado{% elif incidencia.estado == 'RECHAZADO' %}rechazado{% elif incidencia.estado == 'ABIERTO' %}abierto{% else %}proceso{% endif %}">{{ incidencia.get_estado_display }}</span>
+    {% if incidencia.esta_vencida %}<span class="venc"> · Vencido</span>{% endif %}
+    <table style="margin-top:10px">
+      <tr><td>Creado</td><td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td></tr>
+      <tr><td>Fecha límite</td><td>{{ incidencia.fecha_limite|date:"d/m/Y H:i"|default:"—" }}</td></tr>
+      <tr><td>Cerrado</td><td>{{ incidencia.fecha_cierre|date:"d/m/Y H:i"|default:"—" }}</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Escuela</h2>
+    <table>
+      <tr><td>Nombre</td><td>{{ incidencia.escuela.escuelas }}</td></tr>
+      <tr><td>CUE</td><td>{{ incidencia.escuela.cue }}</td></tr>
+      <tr><td>Localidad</td><td>{{ incidencia.escuela.localidad }}</td></tr>
+      <tr><td>Departamento</td><td>{{ incidencia.escuela.departamento }}</td></tr>
+      <tr><td>Predio</td><td>{% if incidencia.escuela.predio_final %}{{ incidencia.escuela.predio_final }}{% elif incidencia.escuela.predio %}{{ incidencia.escuela.predio }}{% else %}No informado{% endif %}</td></tr>
+      <tr><td>Contacto</td><td>{{ incidencia.contacto|default:"—" }}</td></tr>
+      <tr><td>Teléfono</td><td>{{ incidencia.telefono|default:"—" }}</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Relevamiento</h2>
+    <table>
+      <tr><td>Escuela rural</td><td>{% if incidencia.es_rural %}Sí{% else %}No{% endif %}</td></tr>
+      <tr><td>Tiene energía</td><td>{% if incidencia.tiene_energia is None %}No relevado{% elif incidencia.tiene_energia %}Sí{% else %}No{% endif %}</td></tr>
+      <tr><td>Navega</td><td>{% if incidencia.navega is None %}No relevado{% elif incidencia.navega %}Sí{% else %}No{% endif %}</td></tr>
+      <tr><td>Navega lento</td><td>{% if incidencia.navega_lento is None %}No relevado{% elif incidencia.navega_lento %}Sí{% else %}No{% endif %}</td></tr>
+      <tr><td>Ve red estudiante</td><td>{% if incidencia.ve_red_estudiante is None %}No relevado{% elif incidencia.ve_red_estudiante %}Sí{% else %}No{% endif %}</td></tr>
+      <tr><td>Ve red docente</td><td>{% if incidencia.ve_red_docente is None %}No relevado{% elif incidencia.ve_red_docente %}Sí{% else %}No{% endif %}</td></tr>
+      <tr><td>Luces UTM/MX</td><td>{% if incidencia.luces_utmc is None %}No relevado{% elif incidencia.luces_utmc %}Encendidas{% else %}Apagadas{% endif %}</td></tr>
+      <tr><td>Luces switch</td><td>{% if incidencia.luces_switch is None %}No relevado{% elif incidencia.luces_switch %}Encendidas{% else %}Apagadas{% endif %}</td></tr>
+      <tr><td>Luces módem</td><td>{% if incidencia.luces_modem is None %}No relevado{% elif incidencia.luces_modem %}Encendidas{% else %}Apagadas{% endif %}</td></tr>
+    </table>
+    <h2 style="margin-top:14px">Diagnóstico</h2>
+    <div class="nota">{{ incidencia.diagnostico|default:"Sin diagnóstico" }}</div>
+    <h2>Observaciones</h2>
+    <div class="nota">{{ incidencia.observaciones|default:"Sin observaciones" }}</div>
+  </div>
+
+  <div class="card">
+    <h2>Derivaciones</h2>
+    <p style="margin-top:0;color:#555">El sistema no envía correos. Hacé el reclamo por tu cuenta (correo, llamada o portal de la empresa) y registralo acá.</p>
+
+    {% for d in derivaciones %}
+    <div class="deriv">
+      <strong>{{ d.get_empresa_display }}</strong> · {{ d.fecha|date:"d/m/Y H:i" }} · <em>{{ d.get_estado_display }}</em>
+      {% if d.observaciones %}<div class="nota">{{ d.observaciones }}</div>{% endif %}
+      <form method="post" class="fila">
+        {% csrf_token %}
+        <input type="hidden" name="accion" value="estado_derivacion">
+        <input type="hidden" name="derivacion_id" value="{{ d.id }}">
+        <select name="estado">
+          <option value="ENVIADA" {% if d.estado == "ENVIADA" %}selected{% endif %}>Enviada</option>
+          <option value="EN_PROCESO" {% if d.estado == "EN_PROCESO" %}selected{% endif %}>En proceso</option>
+          <option value="RESUELTA" {% if d.estado == "RESUELTA" %}selected{% endif %}>Resuelta</option>
+        </select>
+        <input type="text" name="observaciones" placeholder="Novedad (opcional)" size="32">
+        <button type="submit">Actualizar</button>
+      </form>
     </div>
+    {% empty %}
+    <p>Todavía no se registró ninguna derivación.</p>
+    {% endfor %}
 
-    <!-- Navegación -->
-    <nav class="noc-nav">
-        <ul class="nav-menu">
-            <li class="nav-item">
-                <a href="{% url 'lista_escuelas' %}" class="nav-link">🏫 Escuelas</a>
-            </li>
-            <li class="nav-item">
-                <a href="{% url 'lista_tickets' %}" class="nav-link active">🎫 Tickets</a>
-            </li>
-            <li class="nav-item">
-                <a href="{% url 'consultar_ticket' %}" class="nav-link">🔍 Consultar Ticket</a>
-            </li>
-            <li class="nav-item">
-                <a href="{% url 'dashboard_noc' %}" class="nav-link">📊 Dashboard</a>
-            </li>
-        </ul>
-    </nav>
+    {% if incidencia.estado != "RESUELTO" and incidencia.estado != "CERRADO" %}
+    <h2 style="margin-top:16px">Registrar derivación</h2>
+    <form method="post" action="{% url 'derivar_ticket' incidencia.ticket %}">
+      {% csrf_token %}
+      <div class="fila">
+        <select name="empresa" required>
+          <option value="EDUCAR">Piso Tecnológico - EDUCAR</option>
+          <option value="ENERSESAPEN">Proveedor de Internet</option>
+          <option value="CIDD">Antenas de Starlink / paneles solares de antenas</option>
+          <option value="ENERGIA">Energía / Paneles solares</option>
+        </select>
+      </div>
+      <div class="fila">
+        <textarea name="observaciones" rows="3" placeholder="Cómo hiciste el reclamo (correo, llamada, portal), con quién hablaste y número de reclamo de la empresa."></textarea>
+      </div>
+      <button type="submit">REGISTRAR DERIVACIÓN</button>
+    </form>
+    {% endif %}
+  </div>
 
-    <!-- Contenido principal -->
-    <div class="main-container">
-        <!-- Título (oculto porque ya está en el header) -->
-        
-        <!-- Estado del ticket - ESTILO DASHBOARD -->
-        <div class="noc-card">
-            <div class="status-container">
-                <span class="status-led 
-                    {% if incidencia.estado == 'ABIERTO' %}status-led-green
-                    {% elif incidencia.estado == 'DERIVADO' or incidencia.estado == 'EN_PROCESO' or incidencia.estado == 'RECHAZADO' %}status-led-yellow
-                    {% elif incidencia.estado == 'RESUELTO' or incidencia.estado == 'CERRADO' %}status-led-blue
-                    {% endif %}">
-                </span>
-                <span class="status-title">ESTADO DEL TICKET</span>
-                <span class="status-badge 
-                    {% if incidencia.estado == 'ABIERTO' %}status-badge-green
-                    {% elif incidencia.estado == 'DERIVADO' or incidencia.estado == 'EN_PROCESO' or incidencia.estado == 'RECHAZADO' %}status-badge-yellow
-                    {% elif incidencia.estado == 'RESUELTO' or incidencia.estado == 'CERRADO' %}status-badge-blue
-                    {% endif %}">
-                    {{ incidencia.estado }}
-                </span>
-            </div>
+  <div class="card">
+    <h2>Estado del ticket</h2>
+    <form method="post" class="fila">
+      {% csrf_token %}
+      <input type="hidden" name="accion" value="cambiar_estado">
+      <select name="estado">
+        <option value="ABIERTO" {% if incidencia.estado == "ABIERTO" %}selected{% endif %}>Abierto</option>
+        <option value="DERIVADA" {% if incidencia.estado == "DERIVADA" or incidencia.estado == "DERIVADO" %}selected{% endif %}>Derivado</option>
+        <option value="EN_PROCESO" {% if incidencia.estado == "EN_PROCESO" %}selected{% endif %}>En proceso</option>
+        <option value="RESUELTO" {% if incidencia.estado == "RESUELTO" %}selected{% endif %}>Resuelto</option>
+        <option value="RECHAZADO" {% if incidencia.estado == "RECHAZADO" %}selected{% endif %}>Rechazado</option>
+        <option value="CERRADO" {% if incidencia.estado == "CERRADO" %}selected{% endif %}>Cerrado</option>
+      </select>
+      <button type="submit">Cambiar estado</button>
+    </form>
 
-            <!-- Fechas -->
-            <div class="fechas-grid">
-                <div class="fecha-item">
-                    <div class="fecha-label">FECHA CREACIÓN</div>
-                    <div class="fecha-valor">{{ incidencia.fecha|date:"d/m/Y H:i" }}</div>
-                </div>
-                <div class="fecha-item">
-                    <div class="fecha-label">FECHA LÍMITE</div>
-                    <div class="fecha-valor">{{ incidencia.fecha_limite|date:"d/m/Y" }}</div>
-                </div>
-                {% if incidencia.fecha_resolucion %}
-                <div class="fecha-item">
-                    <div class="fecha-label">FECHA RESOLUCIÓN</div>
-                    <div class="fecha-valor" style="color: #22c55e;">{{ incidencia.fecha_resolucion|date:"d/m/Y H:i" }}</div>
-                </div>
-                {% endif %}
-            </div>
-        </div>
+    {% if incidencia.estado != "RESUELTO" and incidencia.estado != "CERRADO" %}
+    <form method="post" class="fila">
+      {% csrf_token %}
+      <input type="hidden" name="accion" value="cerrar_ticket">
+      <button type="submit" class="verde" onclick="return confirm('¿Confirmás que este ticket fue resuelto?')">MARCAR COMO RESUELTO</button>
+    </form>
+    {% endif %}
+  </div>
 
-        <!-- Grid de información -->
-        <div class="info-grid">
-            <!-- Escuela -->
-            <div class="noc-card">
-                <div class="card-header-custom">
-                    <i class="bi bi-building"></i>
-                    <h3>ESCUELA</h3>
-                </div>
-                <ul class="info-list">
-                    <li><strong>NOMBRE</strong> <span>{{ incidencia.escuela.escuelas }}</span></li>
-                    <li><strong>CUE</strong> <span>{{ incidencia.escuela.cue }}</span></li>
-                    <li><strong>LOCALIDAD</strong> <span>{{ incidencia.escuela.localidad }}</span></li>
-                    <li><strong>DEPARTAMENTO</strong> <span>{{ incidencia.escuela.departamento }}</span></li>
-                    <li><strong>PREDIO</strong> <span>{{ incidencia.escuela.predio_final }}</span></li>
-                </ul>
-            </div>
-
-            <!-- Contacto -->
-            <div class="noc-card">
-                <div class="card-header-custom">
-                    <i class="bi bi-person"></i>
-                    <h3>CONTACTO</h3>
-                </div>
-                <ul class="info-list">
-                    <li><strong>CONTACTO</strong> <span>{{ incidencia.contacto }}</span></li>
-                    <li><strong>TELÉFONO</strong> <span>{{ incidencia.telefono }}</span></li>
-                </ul>
-            </div>
-
-            <!-- Observaciones del operador -->
-            <div class="noc-card">
-               <div class="card-header-custom">
-                   <i class="bi bi-chat-left-text"></i>
-                   <h3>OBSERVACIONES DEL OPERADOR</h3>
-            </div>
-
-            <div class="p-3">
-
-                {% if incidencia.observaciones %}
-                    <div class="observaciones-box">
-                       {{ incidencia.observaciones|linebreaks }}
-                    </div>
-                {% else %}
-                    <div class="text-muted">
-                        No hay observaciones registradas en este ticket.
-                    </div>
-                {% endif %}
-
-            </div>
-       </div>     
-       <!-- Detalle técnico -->
-        <div class="noc-card">
-            <div class="card-header-custom">
-                <i class="bi bi-gear"></i>
-                <h3>DETALLE TÉCNICO</h3>
-            </div>
-            <div class="tech-grid">
-                <div class="tech-item">
-                    <div class="tech-label">ENERGÍA ELÉCTRICA</div>
-                    <div class="tech-value {% if incidencia.tiene_energia == True %}tech-value-yes{% elif incidencia.tiene_energia == False %}tech-value-no{% endif %}">
-                        {{ incidencia.tiene_energia|yesno:"SÍ,NO,NO RELEVADO" }}
-                    </div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-label">NAVEGA</div>
-                    <div class="tech-value {% if incidencia.navega == True %}tech-value-yes{% elif incidencia.navega == False %}tech-value-no{% endif %}">
-                        {{ incidencia.navega|yesno:"SÍ,NO,NO RELEVADO" }}
-                    </div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-label">NAVEGA LENTO</div>
-                    <div class="tech-value {% if incidencia.navega_lento == True %}tech-value-yes{% elif incidencia.navega_lento == False %}tech-value-no{% endif %}">
-                        {{ incidencia.navega_lento|yesno:"SÍ,NO,NO RELEVADO" }}
-                    </div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-label">RED ESTUDIANTE</div>
-                    <div class="tech-value {% if incidencia.ve_red_estudiante == True %}tech-value-yes{% elif incidencia.ve_red_estudiante == False %}tech-value-no{% endif %}">
-                        {{ incidencia.ve_red_estudiante|yesno:"SÍ,NO,NO RELEVADO" }}
-                    </div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-label">RED DOCENTE</div>
-                    <div class="tech-value {% if incidencia.ve_red_docente == True %}tech-value-yes{% elif incidencia.ve_red_docente == False %}tech-value-no{% endif %}">
-                        {{ incidencia.ve_red_docente|yesno:"SÍ,NO,NO RELEVADO" }}
-                    </div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-label">LUCES UTMc</div>
-                    <div class="tech-value {% if incidencia.luces_utmc == True %}tech-value-yes{% elif incidencia.luces_utmc == False %}tech-value-no{% endif %}">
-                        {{ incidencia.luces_utmc|yesno:"SÍ,NO,NO RELEVADO" }}
-                    </div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-label">LUCES SWITCH</div>
-                    <div class="tech-value {% if incidencia.luces_switch == True %}tech-value-yes{% elif incidencia.luces_switch == False %}tech-value-no{% endif %}">
-                        {{ incidencia.luces_switch|yesno:"SÍ,NO,NO RELEVADO" }}
-                    </div>
-                </div>
-                <div class="tech-item">
-                    <div class="tech-label">LUCES MÓDEM</div>
-                    <div class="tech-value {% if incidencia.luces_modem == True %}tech-value-yes{% elif incidencia.luces_modem == False %}tech-value-no{% endif %}">
-                        {{ incidencia.luces_modem|yesno:"SÍ,NO,NO RELEVADO" }}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Derivación -->
-        {% if derivacion %}
-        <div class="noc-card">
-            <div class="card-header-custom">
-                <i class="bi bi-truck"></i>
-                <h3>DERIVACIÓN</h3>
-            </div>
-            <ul class="info-list">
-                <li><strong>EMPRESA</strong> <span>{{ derivacion.empresa }}</span></li>
-                <li><strong>FECHA</strong> <span>{{ derivacion.fecha|date:"d/m/Y H:i" }}</span></li>
-            </ul>
-        </div>
-        {% endif %}
-
-        <!-- Acciones -->
-        <div class="noc-card">
-            {% if incidencia.estado == "RESUELTO" or incidencia.estado == "CERRADO" %}
-                <div class="text-center py-4">
-                    <span class="status-badge status-badge-blue" style="font-size: 16px; padding: 8px 20px; border: 1px solid #3b82f6; border-radius: 6px; background: rgba(59, 130, 246, 0.1);">
-                        TICKET FINALIZADO
-                    </span>
-                    {% if incidencia.fecha_resolucion %}
-                    <p class="text-muted mt-3" style="color: #94a3b8;">Resuelto el {{ incidencia.fecha_resolucion|date:"d/m/Y H:i" }}</p>
-                    {% endif %}
-                </div>
-
-            {% elif incidencia.estado == "DERIVADO" or incidencia.estado == "EN_PROCESO" or incidencia.estado == "RECHAZADO" %}
-                <div class="card-header-custom">
-                    <i class="bi bi-check-circle"></i>
-                    <h3>FINALIZAR TICKET</h3>
-                </div>
-                <form method="post" action="{% url 'ver_ticket' incidencia.ticket %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="accion" value="cerrar_ticket">
-                    <div class="alert-info">
-                        <i class="bi bi-info-circle me-2"></i>
-                        Este ticket está en estado {{ incidencia.estado|lower }}. Si el problema ya fue resuelto, podés cerrarlo.
-                    </div>
-                    <button type="submit" class="btn-cerrar" onclick="return confirm('¿Confirmás que este ticket ha sido resuelto?')">
-                        MARCAR COMO RESUELTO
-                    </button>
-                </form>
-
-            {% else %}
-                <div class="card-header-custom">
-                    <i class="bi bi-send"></i>
-                    <h3>DERIVAR TICKET</h3>
-                </div>
-                <form method="post" action="{% url 'derivar_ticket' incidencia.ticket %}">
-                    {% csrf_token %}
-                    <select name="empresa" class="form-select-custom" required>
-                        <option value="">-- SELECCIONAR EMPRESA --</option>
-                        <option value="EDUCAR">Piso Tecnológico - EDUCAR</option>
-                        <option value="ENERSESAPEN">ENERSESAPEN</option>
-                        <option value="CIDD">CIDD</option>
-                        <option value="ENERGIA">Energía</option>
-                    </select>
-                    <button type="submit" class="btn-derivar">
-                        DERIVAR TICKET
-                    </button>
-                </form>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <footer class="noc-footer">
-        <div>Sistema NOC - Centro de Operaciones de Red | Versión 2.0</div>
-        <div class="mt-2">© {% now "Y" %} - Todos los derechos reservados</div>
-    </footer>
-
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</div>
 </body>
 </html>
+
+
 

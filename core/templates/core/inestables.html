@@ -1,0 +1,35 @@
+{% extends "core/base.html" %}
+{% block content %}
+<h2>Escuelas con cortes frecuentes</h2>
+<form method="get">
+  Últimos <input type="number" name="dias" value="{{ dias }}" min="1" max="13" style="width:4em"> días,
+  con <input type="number" name="min" value="{{ minimo }}" min="1" style="width:4em"> cortes o más.
+  Enlace:
+  <select name="tipo">
+    <option value="">Todos</option>
+    {% for t in tipos %}<option value="{{ t }}" {% if t == tipo %}selected{% endif %}>{{ t }}</option>{% endfor %}
+  </select>
+  <label><input type="checkbox" name="horario" value="escolar" {% if escolar %}checked{% endif %}>
+    Solo horario escolar (lun-vie, 7 a 19)</label>
+  <button type="submit">Filtrar</button>
+</form>
+<p>{{ filas|length }} predios. Micro corte = menos de 15 minutos.</p>
+<table border="1" cellpadding="6">
+  <tr><th>Predio</th><th>Escuela(s)</th><th>Enlace</th><th>Cortes</th>
+      <th>Micro</th><th>Largos</th><th>Minutos sin servicio</th><th>Último corte</th></tr>
+  {% for f in filas %}
+  <tr>
+    <td>{{ f.predio }}</td>
+    <td>{% for e in f.escuelas %}{{ e.escuelas }} ({{ e.localidad }}){% if not forloop.last %}; {% endif %}{% empty %}(sin escuela cargada){% endfor %}</td>
+    <td>{{ f.tipo }}</td>
+    <td>{{ f.n }}</td>
+    <td>{{ f.micro }}</td>
+    <td>{{ f.largos }}</td>
+    <td>{{ f.minutos|floatformat:0 }}</td>
+    <td>{{ f.ultimo|date:"d/m H:i" }}</td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="8">Sin escuelas con cortes en este período.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

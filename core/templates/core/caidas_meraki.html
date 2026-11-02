@@ -1,0 +1,33 @@
+{% extends "core/base.html" %}
+{% block content %}
+<h2>Escuelas con problemas de conectividad</h2>
+<p>Datos al {{ ultima_sync|date:"d/m H:i" }}</p>
+{% if sync_vieja %}
+  <p style="color:#b00"><strong>Atención:</strong> los datos están desactualizados.</p>
+{% endif %}
+<p>
+  <a href="?estado=caida">Caídas ({{ cuenta.caida }})</a> |
+  <a href="?estado=degradada">Degradadas ({{ cuenta.degradada }})</a> |
+  <a href="?estado=inactiva">Inactivas ({{ cuenta.inactiva }})</a> |
+  <a href="?">Caídas y degradadas</a>
+</p>
+<p>Inactiva = Meraki no ve el equipo desde hace mucho tiempo.</p>
+<table border="1" cellpadding="6">
+  <tr><th>Predio</th><th>Escuela</th><th>Localidad</th><th>Enlace</th><th>Estado</th>
+      <th>Sin contacto hace</th><th>APs caídos</th><th>Ticket</th></tr>
+  {% for i in items %}
+  <tr>
+    <td>{{ i.escuela.predio }}</td>
+    <td>{{ i.escuela.escuelas }}</td>
+    <td>{{ i.escuela.localidad }}</td>
+    <td>{{ i.tipo }}</td>
+    <td>{{ i.get_estado_display }}</td>
+    <td>{% if i.estado == "degradada" %}—{% else %}{{ i.ultimo_contacto|timesince|default:"—" }}{% endif %}</td>
+    <td>{{ i.aps_offline }} de {{ i.aps_total }}</td>
+    <td>{% if i.con_ticket %}Ticket abierto{% else %}<a href="{% url 'nuevo_ticket' i.escuela.id %}">Crear ticket</a>{% endif %}</td>
+  </tr>
+  {% empty %}
+  <tr><td colspan="8">Sin problemas detectados.</td></tr>
+  {% endfor %}
+</table>
+{% endblock %}

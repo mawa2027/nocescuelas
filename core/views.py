@@ -1,8 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Escuela, Incidencia, Derivacion
-
+from .models import Escuela, Incidencia, Derivacion, EstadoConectividad
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.db.models import Count, Q, Avg, F, ExpressionWrapper, DurationField, Case, When, Value, IntegerField
+from django.db.models import Count, Q, Avg, F, ExpressionWrapper, DurationField, Case, When, Value, IntegerField, Max
 from django.db.models.functions import TruncMonth
 
 from django.core.mail import send_mail
@@ -12,6 +12,8 @@ from django.views.decorators.cache import never_cache
 from django.core.paginator import Paginator
 
 from datetime import timedelta
+from .utils import norm, resumen_cortes, tipo_enlace, buscar_ids
+
 import uuid
 
 
@@ -107,22 +109,33 @@ def lista_escuelas_old(request):
 def lista_escuelas(request):
 
     q = request.GET.get("q", "").strip()
+    estado = request.GET.get("estado", "")
+    if estado not in ("OK", "CAIDO", "LENTO", "SIN_DATOS"):
+        estado = ""
 
     total_escuelas = Escuela.objects.count()
 
-    tickets_activos = Incidencia.objects.exclude(
-        estado="CERRADO"
-    ).count()
-
-    tickets_abiertos = Incidencia.objects.filter(
-        estado="ABIERTO"
-    ).count()
-
+    cerrados = ("RESUELTO", "RESUELTA", "CERRADO", "RECHAZADO")
+    tickets_activos = Incidencia.objects.exclude(estado__in=cerrados).count()
+    tickets_abiertos = Incidencia.objects.filter(estado="ABIERTO").count()
     tickets_derivados = Incidencia.objects.filter(
-        estado="DERIVADA"
+        estado__in=("DERIVADA", "DERIVADO")
     ).count()
 
-    escuelas = Escuela.objects.all()
+    # Estado de conectividad (lo actualiza la sincronización con Meraki)
+    from django.db.models import Max
+    from django.utils.timesince import timesince
+    por_estado = dict(Escuela.objects.values_list("estado").annotate(n=Count("id")))
+    operativas = por_estado.get("OK", 0)
+    sin_conexion = por_estado.get("CAIDO", 0)
+    lentas = por_estado.get("LENTO", 0)
+    sin_datos = por_estado.get("SIN_DATOS", 0)
+    ultima_sync = EstadoConectividad.objects.aggregate(m=Max("actualizado"))["m"]
+
+    escuelas = Escuela.objects.select_related("conectividad")
+
+    if estado:
+        escuelas = escuelas.filter(estado=estado)
 
     if q:
 
@@ -152,15 +165,57 @@ def lista_escuelas(request):
 
         ).order_by("prioridad", "escuelas")
 
+    else:
+        escuelas = escuelas.order_by("escuelas")
+
+    # Paginación: 50 escuelas por página
+    paginator = Paginator(escuelas, 50)
+    pagina = paginator.get_page(request.GET.get("page"))
+    pagina.object_list = list(pagina.object_list)
+
+    for e in pagina.object_list:
+        c = getattr(e, "conectividad", None)
+        e.tipo = tipo_enlace(e.internet)
+        e.sin_contacto = (
+            timesince(c.ultimo_contacto)
+            if c and c.ultimo_contacto and c.estado in ("caida", "inactiva")
+            else ""
+        )
+
+    actual = pagina.number
+    if paginator.num_pages > 1:
+        page_range = list(range(max(1, actual - 2),
+                                min(paginator.num_pages, actual + 2) + 1))
+    else:
+        page_range = []
+
+    filtros = [
+        ("", "Todas", total_escuelas),
+        ("OK", "Operativas", operativas),
+        ("CAIDO", "Caídas", sin_conexion),
+        ("LENTO", "Lentas", lentas),
+        ("SIN_DATOS", "Sin datos", sin_datos),
+    ]
+
     context = {
 
-        "escuelas": escuelas,
+        "escuelas": pagina,
         "q": q,
+        "estado": estado,
+        "filtros": filtros,
+        "page_range": page_range,
+        "total_resultados": paginator.count,
 
         "total_escuelas": total_escuelas,
         "tickets_activos": tickets_activos,
         "tickets_abiertos": tickets_abiertos,
         "tickets_derivados": tickets_derivados,
+
+        "operativas": operativas,
+        "sin_conexion": sin_conexion,
+        "lentas": lentas,
+        "sin_datos": sin_datos,
+        "ultima_sync": ultima_sync,
 
     }
 
@@ -315,58 +370,23 @@ def nuevo_ticket(request, id):
 # DERIVAR TICKET
 # ===============================
 
+ESTADOS_TICKET_MANUALES = ("ABIERTO", "DERIVADA", "EN_PROCESO", "RESUELTO", "RECHAZADO", "CERRADO")
+ESTADOS_DERIVACION = ("ENVIADA", "EN_PROCESO", "RESUELTA")
+
 def derivar_ticket(request, ticket):
+    """Registra que el operador derivó el reclamo (no envía ningún correo)."""
     incidencia = get_object_or_404(Incidencia, ticket=ticket)
 
     if request.method == "POST":
         empresa = request.POST.get("empresa")
-
-        derivacion = Derivacion.objects.create(
-            incidencia=incidencia,
-            empresa=empresa
-        )
-
-        incidencia.estado = "DERIVADA"
-        incidencia.save()
-
-        escuela = incidencia.escuela
-
-        mensaje = f"""
-TICKET NOC: {incidencia.ticket}
-ESTADO: DERIVADO
-FECHA: {derivacion.fecha.strftime('%d/%m/%Y %H:%M')}
-
-ESCUELA
--------------------------
-Nombre: {escuela.escuelas}
-CUE: {escuela.cue}
-Localidad: {escuela.localidad}
-Departamento: {escuela.departamento}
-Predio: {escuela.predio_final or escuela.predio or 'No informado'}
-
-CONTACTO
--------------------------
-Contacto: {incidencia.contacto}
-Teléfono: {incidencia.telefono}
-
-DIAGNÓSTICO NOC
--------------------------
-{incidencia.diagnostico}
-
-OBSERVACIONES
--------------------------
-{incidencia.observaciones or 'Sin observaciones'}
-"""
-
-        send_mail(
-            subject=f"[NOC] Ticket {incidencia.ticket} - {empresa}",
-            message=mensaje,
-            from_email="angelwcortes@gmail.com",
-            recipient_list=["angelwcortes@gmail.com"],
-            fail_silently=False
-        )
-
-        return redirect("ver_ticket", ticket=incidencia.ticket)
+        if empresa in dict(Derivacion.EMPRESAS):
+            Derivacion.objects.create(
+                incidencia=incidencia,
+                empresa=empresa,
+                observaciones=(request.POST.get("observaciones") or "").strip(),
+            )
+            incidencia.estado = "DERIVADA"
+            incidencia.save()
 
     return redirect("ver_ticket", ticket=incidencia.ticket)
 
@@ -377,20 +397,42 @@ OBSERVACIONES
 
 def ver_ticket(request, ticket):
     incidencia = get_object_or_404(Incidencia, ticket=ticket)
-    derivacion = Derivacion.objects.filter(incidencia=incidencia).first()
 
-    if request.method == "POST" and request.POST.get("accion") == "cerrar_ticket":
-        incidencia.estado = "RESUELTA"
-        incidencia.fecha_resolucion = timezone.now()
-        incidencia.save()
+    if request.method == "POST":
+        accion = request.POST.get("accion")
+
+        if accion == "cerrar_ticket":
+            incidencia.estado = "RESUELTO"
+            incidencia.save()
+
+        elif accion == "cambiar_estado":
+            nuevo = request.POST.get("estado")
+            if nuevo in ESTADOS_TICKET_MANUALES:
+                incidencia.estado = nuevo
+                incidencia.save()
+
+        elif accion == "estado_derivacion":
+            did = str(request.POST.get("derivacion_id", ""))
+            d = incidencia.derivaciones.filter(id=did).first() if did.isdigit() else None
+            nuevo = request.POST.get("estado")
+            if d and nuevo in ESTADOS_DERIVACION:
+                d.estado = nuevo
+                nota = (request.POST.get("observaciones") or "").strip()
+                if nota:
+                    marca = timezone.localtime().strftime("%d/%m %H:%M")
+                    d.observaciones = (d.observaciones + "\n" if d.observaciones else "") + f"[{marca}] {nota}"
+                d.save()
+
         return redirect("ver_ticket", ticket=incidencia.ticket)
 
+    derivaciones = incidencia.derivaciones.order_by("-fecha")
     return render(request, "core/ver_ticket.html", {
         "incidencia": incidencia,
-        "derivacion": derivacion
+        "derivacion": incidencia.derivaciones.order_by("id").first(),
+        "derivaciones": derivaciones,
+        "estados_ticket": [(v, l) for v, l in Incidencia.ESTADOS
+                           if v in ESTADOS_TICKET_MANUALES],
     })
-
-
 # ===============================
 # DETALLE ESCUELA
 # ===============================
@@ -564,3 +606,166 @@ def buscar_escuelas(request):
 
     return JsonResponse(data, safe=False)
     return render(request, "core/dashboard_noc.html", context)
+
+def _entero(valor, defecto):
+    return int(valor) if str(valor).isdigit() else defecto
+
+
+
+
+def escuelas_inestables(request):
+    dias = min(_entero(request.GET.get("dias"), 7), 13)
+    minimo = _entero(request.GET.get("min"), 3)
+    tipo = request.GET.get("tipo", "")
+    escolar = request.GET.get("horario") == "escolar"
+
+    por_predio = {}
+    for e in Escuela.objects.all():
+        for campo in (e.predio, e.predio_final, e.unificar):
+            k = norm(campo)
+            if k and e not in por_predio.setdefault(k, []):
+                por_predio[k].append(e)
+
+    filas, tipos = [], set()
+    for p, r in resumen_cortes(dias).items():
+        escuelas = por_predio.get(p, [])
+        tipos_p = sorted({tipo_enlace(e.internet) for e in escuelas}) or ["Sin escuela"]
+        tipos.update(tipos_p)
+        n = r["escolares"] if escolar else r["cortes"]
+        if n < minimo or (tipo and tipo not in tipos_p):
+            continue
+        filas.append({"predio": p, "escuelas": escuelas,
+                      "tipo": ", ".join(tipos_p), "n": n, **r})
+    filas.sort(key=lambda f: f["n"], reverse=True)
+    return render(request, "core/inestables.html", {
+        "filas": filas, "dias": dias, "minimo": minimo,
+        "tipo": tipo, "tipos": sorted(tipos), "escolar": escolar})
+
+ESTADOS_ABIERTOS = ("ABIERTO", "DERIVADO", "DERIVADA", "EN_PROCESO")
+
+
+def caidas_meraki(request):
+    from django.db.models import Max
+    filtro = request.GET.get("estado")
+    if filtro in ("caida", "degradada", "inactiva"):
+        estados = [filtro]
+    else:
+        estados = ["caida", "degradada"]
+
+    items = list(EstadoConectividad.objects.filter(estado__in=estados)
+                 .select_related("escuela").order_by("desde"))
+    con_ticket = set(Incidencia.objects.filter(
+        estado__in=ESTADOS_ABIERTOS,
+        escuela_id__in=[i.escuela_id for i in items],
+    ).values_list("escuela_id", flat=True))
+    for i in items:
+        i.tipo = tipo_enlace(i.escuela.internet)
+        i.con_ticket = i.escuela_id in con_ticket
+
+    cuenta = {e: EstadoConectividad.objects.filter(estado=e).count()
+              for e in ("caida", "degradada", "inactiva")}
+    ultima = EstadoConectividad.objects.aggregate(m=Max("actualizado"))["m"]
+    limite = timedelta(hours=72 if timezone.localtime().weekday() in (0, 5, 6) else 30)
+    return render(request, "core/caidas_meraki.html", {
+        "items": items,
+        "cuenta": cuenta,
+        "filtro": filtro,
+        "ultima_sync": ultima,
+        "sync_vieja": not ultima or timezone.now() - ultima > limite,
+    })
+def lista_escuelas(request):
+
+    q = request.GET.get("q", "").strip()
+    estado = request.GET.get("estado", "")
+    if estado not in ("OK", "CAIDO", "LENTO", "SIN_DATOS"):
+        estado = ""
+
+    total_escuelas = Escuela.objects.count()
+
+    cerrados = ("RESUELTO", "RESUELTA", "CERRADO", "RECHAZADO")
+    tickets_activos = Incidencia.objects.exclude(estado__in=cerrados).count()
+    tickets_abiertos = Incidencia.objects.filter(estado="ABIERTO").count()
+    tickets_derivados = Incidencia.objects.filter(
+        estado__in=("DERIVADA", "DERIVADO")
+    ).count()
+
+    from django.db.models import Max
+    from django.utils.timesince import timesince
+    por_estado = dict(Escuela.objects.values_list("estado").annotate(n=Count("id")))
+    operativas = por_estado.get("OK", 0)
+    sin_conexion = por_estado.get("CAIDO", 0)
+    lentas = por_estado.get("LENTO", 0)
+    sin_datos = por_estado.get("SIN_DATOS", 0)
+    ultima_sync = EstadoConectividad.objects.aggregate(m=Max("actualizado"))["m"]
+
+    ids = buscar_ids(q, estado) if q else None
+
+    if ids is not None:
+        paginator = Paginator(ids, 50)
+        pagina = paginator.get_page(request.GET.get("page"))
+        objs = Escuela.objects.select_related("conectividad").in_bulk(list(pagina.object_list))
+        pagina.object_list = [objs[i] for i in pagina.object_list if i in objs]
+    else:
+        escuelas = Escuela.objects.select_related("conectividad")
+        if estado:
+            escuelas = escuelas.filter(estado=estado)
+        paginator = Paginator(escuelas.order_by("escuelas"), 50)
+        pagina = paginator.get_page(request.GET.get("page"))
+        pagina.object_list = list(pagina.object_list)
+
+    for e in pagina.object_list:
+        c = getattr(e, "conectividad", None)
+        e.tipo = tipo_enlace(e.internet)
+        e.sin_contacto = (
+            timesince(c.ultimo_contacto)
+            if c and c.ultimo_contacto and c.estado in ("caida", "inactiva")
+            else ""
+        )
+
+    actual = pagina.number
+    if paginator.num_pages > 1:
+        page_range = list(range(max(1, actual - 2),
+                                min(paginator.num_pages, actual + 2) + 1))
+    else:
+        page_range = []
+
+    filtros = [
+        ("", "Todas", total_escuelas),
+        ("OK", "Operativas", operativas),
+        ("CAIDO", "Caídas", sin_conexion),
+        ("LENTO", "Lentas", lentas),
+        ("SIN_DATOS", "Sin datos", sin_datos),
+    ]
+
+    context = {
+        "escuelas": pagina,
+        "q": q,
+        "estado": estado,
+        "filtros": filtros,
+        "page_range": page_range,
+        "total_resultados": paginator.count,
+        "total_escuelas": total_escuelas,
+        "tickets_activos": tickets_activos,
+        "tickets_abiertos": tickets_abiertos,
+        "tickets_derivados": tickets_derivados,
+        "operativas": operativas,
+        "sin_conexion": sin_conexion,
+        "lentas": lentas,
+        "sin_datos": sin_datos,
+        "ultima_sync": ultima_sync,
+    }
+
+    return render(request, "core/lista_escuelas.html", context)
+
+
+def buscar_escuelas(request):
+    """Sugerencias del desplegable de búsqueda."""
+    q = request.GET.get("q", "").strip()
+    ids = buscar_ids(q) if len(q) >= 2 else None
+    if not ids:
+        return JsonResponse([], safe=False)
+    ids = ids[:8]
+    objs = Escuela.objects.in_bulk(ids)
+    data = [{"nombre": objs[i].escuelas, "cue": objs[i].cue, "localidad": objs[i].localidad}
+            for i in ids if i in objs]
+    return JsonResponse(data, safe=False)

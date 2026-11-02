@@ -85,22 +85,21 @@ class Incidencia(models.Model):
     )
         
     def esta_vencida(self):
-        if self.estado != "RESUELTA" and self.fecha_limite:
+        if self.estado not in ("RESUELTO", "CERRADO", "RECHAZADO") and self.fecha_limite:
             return timezone.now() > self.fecha_limite
         return False
 
     def save(self, *args, **kwargs):
-
         # Generar ticket si no existe
         if not self.ticket:
             self.ticket = f"NOC-{uuid.uuid4().hex[:8].upper()}"
 
-        # 🔥 Si se marca como RESUELTA → guardar fecha cierre
-        if self.estado == "RESUELTA" and not self.fecha_cierre:
-            self.fecha_cierre = timezone.now()
-
-        # 🔥 Si se vuelve a abrir → borrar fecha cierre
-        if self.estado != "RESUELTA":
+        # Si se resuelve o cierra, guardar la fecha de cierre
+        if self.estado in ("RESUELTO", "CERRADO"):
+            if not self.fecha_cierre:
+                self.fecha_cierre = timezone.now()
+        else:
+            # Si se vuelve a abrir, borrar la fecha de cierre
             self.fecha_cierre = None
 
         super().save(*args, **kwargs)
@@ -142,3 +141,35 @@ class Derivacion(models.Model):
     def __str__(self):
         return f"{self.empresa} - {self.estado}"
 
+class CambioDisponibilidad(models.Model):
+    predio = models.CharField(max_length=50, db_index=True)  # nombre de la red = n.º de predio
+    network_id = models.CharField(max_length=40)
+    serial = models.CharField(max_length=20)
+    ts = models.DateTimeField(db_index=True)
+    estado_anterior = models.CharField(max_length=12)
+    estado_nuevo = models.CharField(max_length=12)
+
+    class Meta:
+        unique_together = ("serial", "ts", "estado_nuevo")
+        ordering = ["-ts"]
+
+class EstadoConectividad(models.Model):
+    ESTADOS = [("online", "Online"), ("caida", "Caída"),
+               ("degradada", "Degradada"), ("inactiva", "Inactiva")]
+    escuela = models.OneToOneField(Escuela, on_delete=models.CASCADE,
+                                   related_name="conectividad")
+    estado = models.CharField(max_length=10, choices=ESTADOS,
+                              default="online", db_index=True)
+    desde = models.DateTimeField()
+    ultimo_contacto = models.DateTimeField(null=True, blank=True)
+    aps_total = models.PositiveIntegerField(default=0)
+    aps_offline = models.PositiveIntegerField(default=0)
+    fallos_consecutivos = models.PositiveIntegerField(default=0)
+    actualizado = models.DateTimeField(auto_now=True)
+
+
+class EventoConectividad(models.Model):
+    escuela = models.ForeignKey(Escuela, on_delete=models.CASCADE)
+    estado_anterior = models.CharField(max_length=10)
+    estado_nuevo = models.CharField(max_length=10)
+    fecha = models.DateTimeField(auto_now_add=True)
